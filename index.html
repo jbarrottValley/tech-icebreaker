@@ -271,29 +271,8 @@ function initializeGrid() {
   currentGrid = [...bingoPrompts].sort(() => Math.random() - 0.5);
   markedCells = new Set();
   cellNames = new Map();
-}
-      checkForWinner();
-    });
-
-    nameInput.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-
-    cell.appendChild(promptDiv);
-    cell.appendChild(nameInput);
-
-    if (markedCells.has(index)) {
-      cell.classList.add('marked');
-    }
-
-    cell.addEventListener('click', () => toggleCell(index));
-  }
-
-  grid.appendChild(cell);
-}
-          
+}     
       updateMarkCount();
-    }
 
     function toggleCell(index) {
       if (index === 12 || !cellNames.get(index)) return; // Can't mark without a name
