@@ -325,21 +325,6 @@ for (let index = 0; index < 25; index++) {
   grid.appendChild(cell);
 }
           
-          nameInput.addEventListener('click', (e) => {
-            e.stopPropagation();
-        }
-          
-          cell.appendChild(promptDiv);
-          cell.appendChild(nameInput);
-          
-          if (markedCells.has(index)) {
-            cell.classList.add('marked');
-          }
-          
-          cell.addEventListener('click', () => toggleCell(index));
-        }
-        
-        grid.appendChild(cell);
 }
       updateMarkCount();
     }
