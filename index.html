@@ -272,7 +272,6 @@ function initializeGrid() {
   markedCells = new Set();
   cellNames = new Map();
 }     
-      updateMarkCount();
 
     function toggleCell(index) {
       if (index === 12 || !cellNames.get(index)) return; // Can't mark without a name
