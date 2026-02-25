@@ -378,7 +378,60 @@ function initializeGrid() {
     }
 
    
+function renderGrid() {
+  const grid = document.getElementById('bingo-grid');
+  grid.innerHTML = '';
 
+  const prompts = [...currentGrid];
+
+  for (let index = 0; index < 25; index++) {
+    const cell = document.createElement('div');
+    cell.className = 'bingo-cell grid-enter';
+    cell.style.animationDelay = `${index * 30}ms`;
+
+    if (index === 12) {
+      cell.classList.add('center-free');
+      cell.innerHTML =
+        '<div class="free-space-label">⭐</div><div class="bingo-prompt">FREE SPACE</div>';
+    } else {
+      const prompt = prompts.shift();
+
+      const promptDiv = document.createElement('div');
+      promptDiv.className = 'bingo-prompt';
+      promptDiv.textContent = prompt;
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'bingo-name-input';
+      nameInput.placeholder = 'Name/Initial';
+      nameInput.dataset.index = index;
+      nameInput.value = cellNames.get(index) || '';
+
+      nameInput.addEventListener('input', (e) => {
+        cellNames.set(index, e.target.value);
+        updateMarkCount();
+        checkForWinner();
+      });
+
+      nameInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      cell.appendChild(promptDiv);
+      cell.appendChild(nameInput);
+
+      if (markedCells.has(index)) {
+        cell.classList.add('marked');
+      }
+
+      cell.addEventListener('click', () => toggleCell(index));
+    }
+
+    grid.appendChild(cell);
+  }
+
+  updateMarkCount();
+}
     // Initialize
     initializeGrid();
     renderGrid();
