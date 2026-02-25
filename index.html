@@ -448,37 +448,7 @@ for (let index = 0; index < 25; index++) {
       }
     }
 
-    async function onConfigChange(cfg) {
-      document.getElementById('game-title').textContent = cfg.game_title || defaultConfig.game_title;
-      document.getElementById('game-subtitle').textContent = cfg.game_subtitle || defaultConfig.game_subtitle;
-      
-      const customFont = cfg.font_family || defaultConfig.font_family;
-      document.querySelectorAll('.font-display, .font-body').forEach(el => {
-        el.style.fontFamily = `${customFont}, sans-serif`;
-      });
-    }
-
-    function mapToCapabilities(cfg) {
-      return {
-        recolorables: [],
-        borderables: [],
-        fontEditable: {
-          get: () => cfg.font_family || defaultConfig.font_family,
-          set: (value) => {
-            config.font_family = value;
-            window.elementSdk.setConfig({ font_family: value });
-          }
-        },
-        fontSizeable: undefined
-      };
-    }
-
-    function mapToEditPanelValues(cfg) {
-      return new Map([
-        ["game_title", cfg.game_title || defaultConfig.game_title],
-        ["game_subtitle", cfg.game_subtitle || defaultConfig.game_subtitle]
-      ]);
-    }
+   
 
     // Initialize
     initializeGrid();
