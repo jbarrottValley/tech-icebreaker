@@ -267,13 +267,10 @@
       "Has created a personal blog or website"
     ];
 
-    function initializeGrid() {
-      currentGrid = [...bingoPrompts].sort(() => Math.random() - 0.5);
-      markedCells = new Set();
-      cellNames = new Map();
-    }
-
-      updateMarkCount();
+function initializeGrid() {
+  currentGrid = [...bingoPrompts].sort(() => Math.random() - 0.5);
+  markedCells = new Set();
+  cellNames = new Map();
 }
       checkForWinner();
     });
