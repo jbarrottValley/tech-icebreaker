@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Icebreaker Bingo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+
+    .font-display {
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .font-body {
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    html, body, #app-wrapper {
+      height: 100%;
+    }
+
+    .bingo-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .bingo-cell {
+      aspect-ratio: 1;
+      border-radius: 16px;
+      cursor: pointer;
+      border: 3px solid #6BC285;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      font-size: 15px;
+      line-height: 1.4;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background-color: #ffffff;
+      color: #1f3028;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .bingo-cell:hover:not(.marked):not(.center-free) {
+      border-color: #4a8a5e;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(107, 194, 133, 0.25);
+      background-color: #f0faf6;
+    }
+
+    .bingo-prompt {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f3028;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .bingo-name-input {
+      width: 100%;
+      background-color: #f8f9fa;
+      border: 2px solid #6BC285;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 13px;
+      color: #1f3028;
+      text-align: center;
+      font-weight: 600;
+      font-family: 'Oswald', sans-serif;
+    }
+
+    .bingo-name-input::placeholder {
+      color: #a0a8b0;
+    }
+
+    .bingo-name-input:focus {
+      outline: none;
+      border-color: #4a8a5e;
+      background-color: #e8f5f0;
+    }
+
+    .bingo-cell.marked {
+      background: linear-gradient(135deg, #6BC285, #5aad71);
+      border-color: #4a8a5e;
+      box-shadow: 0 6px 16px rgba(107, 194, 133, 0.35);
+      color: #ffffff;
+    }
+
+    .bingo-cell.marked .bingo-prompt {
+      color: #ffffff;
+    }
+
+    .bingo-cell.marked .bingo-name-input {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+    }
+
+    .center-free {
+      background: linear-gradient(135deg, #6BC285, #5aad71) !important;
+      border-color: #4a8a5e !important;
+      box-shadow: 0 6px 16px rgba(107, 194, 133, 0.35) !important;
+      cursor: default !important;
+      color: #ffffff !important;
+    }
+
+    .free-space-label {
+      font-size: 32px;
+      margin-bottom: 4px;
+    }
+
+    .center-free .bingo-prompt {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .grid-enter {
+      animation: slideIn 0.5s ease-out forwards;
+    }
+
+    .winner-animation {
+      animation: pulse 0.6s ease-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #e9ecef;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #6BC285;
+      border-radius: 4px;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="font-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); margin: 0;">
+  <div id="app-wrapper" class="w-full overflow-auto"><!-- Header -->
+   <header class="sticky top-0 z-40 backdrop-blur-md border-b" style="background-color: rgba(255, 255, 255, 0.95); border-color: #6BC285;">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+     <div class="flex items-center justify-between mb-3">
+      <h1 id="game-title" class="font-display text-4xl sm:text-5xl font-bold" style="color: #1f3028;">Tech Icebreaker Bingo</h1>
+      <div class="flex items-center gap-3">
+       <div class="text-right">
+        <div id="bingo-count" class="text-lg font-semibold" style="color: #6BC285;">
+         0 MARKED
+        </div>
+        <div class="text-sm" style="color: #6B7280;">
+         / 24 SQUARES
+        </div>
+       </div>
+      </div>
+     </div>
+     <p id="game-subtitle" class="text-base" style="color: #1f3028;">Learn about your teammates</p>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10 pb-16"><!-- Instructions -->
+    <div class="mb-10 p-6 rounded-xl border-2" style="background-color: #f0faf6; border-color: #6BC285;">
+     <h2 class="font-display font-semibold text-lg mb-3" style="color: #1f3028;">HOW TO PLAY</h2>
+     <p class="text-base leading-relaxed" style="color: #1f3028;">Find teammates who match the descriptions in each square. Type their name in that square, then click it to mark it complete. The center square is a free space.</p>
+    </div><!-- Bingo Grid -->
+    <div class="mb-12">
+     <div class="bingo-grid" id="bingo-grid"><!-- Grid cells rendered by JS -->
+     </div>
+    </div><!-- Winner Modal -->
+    <div id="winner-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.5);">
+     <div class="rounded-2xl p-10 text-center max-w-sm border-3 winner-animation" style="background-color: #ffffff; border-color: #6BC285; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
+      <div class="text-6xl mb-4">
+       🎉
+      </div>
+      <h3 class="font-display text-3xl font-bold mb-3" style="color: #1f3028;">BINGO!</h3>
+      <p class="text-base mb-8" style="color: #1f3028;">You've completed a line!</p><button onclick="resetGame()" class="px-8 py-3 rounded-xl font-bold text-base transition-all" style="background-color: #6BC285; color: #ffffff; box-shadow: 0 4px 12px rgba(107, 194, 133, 0.3);"> Play Again </button>
+     </div>
+    </div><!-- Controls -->
+    <div class="flex gap-4 justify-center mb-12"><button onclick="resetGame()" class="px-6 py-3 rounded-lg font-semibold text-base transition-all" style="background-color: #6BC285; color: #ffffff; box-shadow: 0 2px 8px rgba(107, 194, 133, 0.2);"> Reset Game </button> <button onclick="shuffleGrid()" class="px-6 py-3 rounded-lg font-semibold text-base transition-all" style="background-color: #e9ecef; color: #1f3028; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);"> Shuffle Squares </button>
+    </div><!-- Tips Section -->
+    <div class="mt-12 p-8 rounded-xl border-2" style="background-color: #f0faf6; border-color: #6BC285;">
+     <h3 class="font-display font-semibold text-lg mb-4" style="color: #1f3028;">💡 TIPS FOR BEST RESULTS</h3>
+     <ul class="space-y-3 text-base" style="color: #1f3028;">
+      <li>✓ Take your time meeting people and learning their stories</li>
+      <li>✓ Ask follow-up questions to spark deeper conversations</li>
+      <li>✓ Share your own experiences when relevant</li>
+      <li>✓ Have fun with it—this is about connection, not competition!</li>
+     </ul>
+    </div>
+   </main>
+  </div>
+  <script>
+    const defaultConfig = {
+      game_title: "Tech Icebreaker Bingo",
+      game_subtitle: "Learn about your teammates",
+      font_family: "Oswald"
+    };
+
+    let config = { ...defaultConfig };
+    let markedCells = new Set();
+    let cellNames = new Map();
+    let currentGrid = [];
+
+    const bingoPrompts = [
+      "Has helped a family member fix Wi-Fi",
+      "Prefers dark mode",
+      "Has forgotten a password today",
+      "Has strong opinions about iPhone vs Android",
+      "Used ChatGPT to walk them through a home repair",
+      "Has written code",
+      "Has broken production",
+      "Attended a local tech meetup",
+      "Has visited our data center",
+      "Has explained fiber internet to someone at a BBQ",
+      "Knows what CTRL V does",
+      "Knows how to mute notifications in Teams",
+      "Knows what a Commodore 64 is",
+      "Has more than 20 browser tabs open",
+      "Has recovered a lost file successfully",
+      "Has taught someone how to use a new app",
+      "Has participated in a Teams Brainstorm session",
+      "Has changed careers into tech",
+      "Has used a spreadsheet to solve a problem",
+      "Has learned a new tech tool in the past year",
+      "Remembers the sound of dial-up internet",
+      "Has reset a router more times than they'd like to admit",
+      "Has said 'Have you tried turning it off and on again?'",
+      "Has created a personal blog or website",
+    ];
+
+    function initializeGrid() {
+      currentGrid = [...bingoPrompts].sort(() => Math.random() - 0.5);
+      markedCells = new Set();
+      cellNames = new Map();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('bingo-grid');
+      grid.innerHTML = '';
+
+      currentGrid.forEach((prompt, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'bingo-cell grid-enter';
+        cell.style.animationDelay = `${index * 30}ms`;
+        
+        if (index === 12) {
+          cell.classList.add('center-free');
+          cell.innerHTML = '<div class="free-space-label">⭐</div><div class="bingo-prompt">FREE SPACE</div>';
+        } else {
+          const promptDiv = document.createElement('div');
+          promptDiv.className = 'bingo-prompt';
+          promptDiv.textContent = prompt;
+          
+          const nameInput = document.createElement('input');
+          nameInput.type = 'text';
+          nameInput.className = 'bingo-name-input';
+          nameInput.placeholder = 'Name/Initial';
+          nameInput.dataset.index = index;
+          nameInput.value = cellNames.get(index) || '';
+          
+          nameInput.addEventListener('input', (e) => {
+            cellNames.set(index, e.target.value);
+            updateMarkCount();
+            checkForWinner();
+          });
+          
+          nameInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+          });
+          
+          cell.appendChild(promptDiv);
+          cell.appendChild(nameInput);
+          
+          if (markedCells.has(index)) {
+            cell.classList.add('marked');
+          }
+          
+          cell.addEventListener('click', () => toggleCell(index));
+        }
+        
+        grid.appendChild(cell);
+      });
+
+      updateMarkCount();
+    }
+
+    function toggleCell(index) {
+      if (index === 12 || !cellNames.get(index)) return; // Can't mark without a name
+
+      if (markedCells.has(index)) {
+        markedCells.delete(index);
+      } else {
+        markedCells.add(index);
+      }
+
+      renderGrid();
+      checkForWinner();
+    }
+
+    function updateMarkCount() {
+      const count = markedCells.size;
+      document.getElementById('bingo-count').textContent = `${count} MARKED`;
+    }
+
+    function checkForWinner() {
+      const winPatterns = [
+        // Rows
+        [0, 1, 2, 3, 4],
+        [5, 6, 7, 8, 9],
+        [10, 11, 12, 13, 14],
+        [15, 16, 17, 18, 19],
+        [20, 21, 22, 23, 24],
+        // Columns
+        [0, 5, 10, 15, 20],
+        [1, 6, 11, 16, 21],
+        [2, 7, 12, 17, 22],
+        [3, 8, 13, 18, 23],
+        [4, 9, 14, 19, 24],
+        // Diagonals
+        [0, 6, 12, 18, 24],
+        [4, 8, 12, 16, 20]
+      ];
+
+      for (let pattern of winPatterns) {
+        if (pattern.every(index => index === 12 || markedCells.has(index))) {
+          showWinner();
+          return;
+        }
+      }
+    }
+
+    function showWinner() {
+      const modal = document.getElementById('winner-modal');
+      modal.classList.remove('hidden');
+      createConfetti();
+    }
+
+    function resetGame() {
+      markedCells = new Set();
+      cellNames = new Map();
+      document.getElementById('winner-modal').classList.add('hidden');
+      renderGrid();
+    }
+
+    function shuffleGrid() {
+      currentGrid = [...bingoPrompts].sort(() => Math.random() - 0.5);
+      markedCells = new Set();
+      cellNames = new Map();
+      renderGrid();
+    }
+
+    function createConfetti() {
+      for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * window.innerWidth + 'px';
+        confetti.style.top = '-10px';
+        confetti.style.fontSize = Math.random() * 20 + 10 + 'px';
+        confetti.textContent = ['🎉', '⭐', '🚀', '💻', '🎊'][Math.floor(Math.random() * 5)];
+        confetti.style.opacity = '1';
+        document.body.appendChild(confetti);
+
+        const duration = Math.random() * 2 + 2;
+        const xDrift = (Math.random() - 0.5) * 200;
+        
+        let top = -10;
+        let opacity = 1;
+        const startTime = Date.now();
+
+        const animate = () => {
+          const elapsed = (Date.now() - startTime) / 1000;
+          top = -10 + elapsed * 100;
+          opacity = 1 - (elapsed / duration);
+          
+          confetti.style.top = top + 'px';
+          confetti.style.left = (parseFloat(confetti.style.left) + xDrift * 0.01) + 'px';
+          confetti.style.opacity = opacity;
+
+          if (elapsed < duration) {
+            requestAnimationFrame(animate);
+          } else {
+            confetti.remove();
+          }
+        };
+
+        animate();
+      }
+    }
+
+    async function onConfigChange(cfg) {
+      document.getElementById('game-title').textContent = cfg.game_title || defaultConfig.game_title;
+      document.getElementById('game-subtitle').textContent = cfg.game_subtitle || defaultConfig.game_subtitle;
+      
+      const customFont = cfg.font_family || defaultConfig.font_family;
+      document.querySelectorAll('.font-display, .font-body').forEach(el => {
+        el.style.fontFamily = `${customFont}, sans-serif`;
+      });
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: {
+          get: () => cfg.font_family || defaultConfig.font_family,
+          set: (value) => {
+            config.font_family = value;
+            window.elementSdk.setConfig({ font_family: value });
+          }
+        },
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ["game_title", cfg.game_title || defaultConfig.game_title],
+        ["game_subtitle", cfg.game_subtitle || defaultConfig.game_subtitle]
+      ]);
+    }
+
+    // Initialize
+    initializeGrid();
+    renderGrid();
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange,
+      mapToCapabilities,
+      mapToEditPanelValues
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc70def9331125f',t:'MTc3MDg0NjU0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
